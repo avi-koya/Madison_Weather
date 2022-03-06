@@ -1,0 +1,366 @@
+---
+author: "Avinash Koya"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE)
+library(tidyverse)
+library(lubridate)
+ggplot(cars, aes(x=speed)) + geom_histogram(boundary = -1, binwidth=1)
+```
+
+## Homework Assignment 
+
+#### Due Friday, February 18, 2022, at 11:59 PM
+
+
+### Preliminaries
+
+- The directories and files needed for this assignment are as follows. You might get errors when trying to knit files if the names do not match. COURSE is replaced by whatever your course home folder name is.
+
+- Directories  
+    - `COURSE/hw/`  
+    - `COURSE/hw/hw02/`  
+    - `COURSE/data/`
+    
+- Files  
+    - `COURSE/hw/hw02/hw02.Rmd`  
+    - `COURSE/data/lake-monona-winters-2021.csv`  
+    - `COURSE/data/exoplanets_default_2021-06-15.csv`
+    
+- Download the files `lake-monona-winters-2021.csv` and `exoplanets_default_2021-06-15.csv` place them in the course `data` directory if you do not already have them.  
+- Download the file `hw02.Rmd` and place into the `hw/hw02` directory.  
+- Navigate to the `hw/hw02` directory and **set it to be your working directory**.
+
+- Replace the text "YOUR NAME HERE" in the YAML section with your name.
+- Edit this file, answer the questions, knit, and submit your solutions by uploading the resulting HTML file to the course Canvas site.  Be sure to review your HTML and ensure that your solutions appear as you expect prior to submitting.
+- Post questions on our Piazza site, visit the Learning Center, or attend office hours if you have questions.  On Piazza, we will respond to questions during normal working hours in Madison, WI (9 AM CT - 5 PM CT).  Questions asked outside that window *may* still be addressed. 
+
+
+#### Note
+- This R Markdown file contains R code for reading in and transforming data that we will learn more about in coming weeks.
+    - For this HW, you are only responsible for understanding parts of the code that produce graphs.
+    - You may skip over the code chunks that do different tasks.
+
+
+### Aims
+
+- Read ggplot2 code examples for making graphics and describe what different commands do
+- Practice using `ggplot2` commands on new data to mimic examples from lecture
+
+
+### Data
+
+#### Lake Monona
+Data in `lake-monona-winters-2021.csv` are similar to those in the Lake Mendota data set from lecture. There is one row from each winter from 1851–52 through 2020–21; however, several early winters have incomplete data.
+
+- Variables in the data set are:  
+    - winter — a character vector such as “1855-56” which specifies the winter  
+    - year1 — the first year of the winter  
+    - periods — the number of periods of consecutive days where the surface of Lake Monona was closed by 50% or more of ice.  
+    - duration — the total number of days the lake was closed by 50% or more of ice during the winter  
+    - first_freeze — the date of the first freeze during the winter  
+    - last_thaw — the date of the last thaw during the winter  
+
+#### Exoplanets
+Data in the exoplanets data set are described in CNCS Chapter 4.
+
+The chunk which reads and transforms the data set includes code that we will learn about in future parts of the course.
+
+
+
+### Problems
+
+- Execute the code in the chunk below to read in the Lake Monona data. *(Note: this data set is different than the Lake Mendota data used in lecture.)*
+    - If there is an error, check to see if there is a `data` directory two directories up that contains the data file.
+
+```{r read-data}
+## Read Lake Monona data
+## Remove rows with missing data
+monona = read_csv("../../data/lake-monona-winters-2021.csv") %>%
+  drop_na()
+```
+
+### 1
+
+The following code makes a histogram of the `duration` variable in the Lake Monona data set.
+
+```{r problem1, fig.height = 3}
+ggplot(monona, aes(x=duration)) +
+  geom_histogram(boundary=0, binwidth=10, color="black", fill="white") 
+```
+
+Approximately how many winters had between 80 to 100 days where Lake Monona was at least 50% covered with ice?
+
+About 54 winters
+
+
+
+### 2
+
+Modify the code below so that in the resulting plot:
+
+- the boundary one of the bins is at 20 days
+- the width of each bin is 5 days
+- the color of the interior of the bars is "yellow"
+- the color outlining the bars is "blue"  
+- set the `size` argument to 1 in order to thicken the borders of the bins  
+- the x label says "Days Closed with Ice"
+- the y label says "Total"
+- there is a title with words of your choosing that describe the figure
+
+```{r problem2}
+## modify this code
+ggplot(monona, aes(x = duration)) +
+  geom_histogram(boundary=20, binwidth=5, color="blue", fill="yellow", size=1) +
+  xlab("Days Closed with Ice") +
+  ylab("Total") +
+  ggtitle("Count of Days Where Ice is Frozen vs Days Closed with Ice")
+```
+
+
+
+### 3
+
+#### 3A
+Create a line plot with `duration` on the y axis and `year1` on the x axis. Add a blue smooth curve and a straight red line which estimate the trends.
+Modify axis labels and add an appropriate title.
+
+```{r problem3}
+## Type your code here
+ggplot(monona, aes(x = year1, y = duration)) +
+  geom_point() +
+  geom_line() +
+  geom_smooth(color="blue", se=FALSE) +
+  geom_smooth(color="red", method="lm", se=FALSE) +
+  xlab("Year") +
+  ylab("Days frozen (covered in ice)") +
+  ggtitle("Days Lake is Frozen vs Year")
+```
+
+
+#### 3B
+Compare the curve and the straight line; does the curve differ from the straight line in an important manner?
+
+Not really, the curve and the straight line are very similar, there aren't any significant differences between the two lines.
+
+
+#### 3C
+To the nearest five days, about how long was Lake Monona closed with ice in a typical year near 1900 (i.e., what is the approximate value of the smooth curve or straight line around 1900)?
+
+About 110 days
+
+
+#### 3C
+To the nearest five days, about how long was Lake Monona closed with ice in a typical year near 2000 (i.e., what is the approximate value of the smooth curve or straight line around 2000)?
+
+About 90 days
+
+
+
+### 4
+
+The next chunk of code adds columns to the `monona` data set which contain the fitted values (variable name `fitted`) and the residuals (variable name `residuals`) after fitting a straight line simple regression model to the data.
+
+
+```{r}
+## You do not need to examine or understand this code chunk.
+## Fit the model
+fit = lm(duration ~ year1, data = monona)
+
+## Add fitted values and residuals to the data set
+monona = monona %>% 
+  mutate(fitted = fitted(fit),
+         residuals = residuals(fit))
+```
+
+
+#### 4A
+Make a plot of the residuals versus year1.
+Add a horizontal line with an intercept at zero. *(See example from lecture using `geom_hline()`)*.
+Add a smooth curve to this residual plot as well.
+Adjust the axis labels and add a descriptive title.
+
+```{r}
+## Type your code here
+ggplot(monona, aes(x=year1, y=residuals)) +
+  geom_point() +
+  geom_hline(yintercept=0) +
+  geom_smooth(se=FALSE) +
+  xlab("Year") +
+  ylab("Residual") +
+  ggtitle("Variation of Ice Coverage Data over Time")
+```
+
+
+
+#### 4B
+Using the informal interpretation discussed in lecture, what evidence from the residual plot indicates that a straight-line simple regression model for the duration that Lake Monona is frozen versus time is an adequate model?
+
+Since the smooth curve line is very similar to the y-intercept line at a residual of 0, it is safe to use the straight-line simple regression model because the average residual hovers around 0, indicating that it is an adequate model to use to predict certain data points.
+
+
+
+### 5
+
+The next chunk of code adds a variable `winter_day` to the `monona` data set which counts the number of days after the previous June 30 on which Lake Monona first freezes.
+You do not need to examine or understand this code.
+
+```{r}
+## add winter_day = #days of first freeze after June 30
+monona = monona %>% 
+  mutate(winter_day = as.numeric(
+    first_freeze - ymd(str_c(year1,"-06-30"))))
+```
+
+Make a boxplot of `winter_day`.
+Select different colors  (i) to shade the interior and (ii) the outline of the box and whiskers.  Add an appropriate y-axis label and a plot title.
+
+```{r}
+## Type your code here
+ggplot(monona) +
+  geom_boxplot(aes(x=winter_day), fill="blue", color="black") +
+  xlab("Days after June 30th") +
+  ylab("Distribution") +
+  ggtitle("Distribution of first freeze day from June 30th")
+```
+
+
+
+### 6
+
+The code in the chunk below creates a histogram of the `winter_day` variable and has one bin centered at 154 (which corresponds to December 1).
+
+Modify the scale of the x axis so that the axis is labeled with the dates Dec 1, Dec 16, Dec 31, Jan 15, Jan 30 at the values 154, 169, 184, 199, 214.
+You will use the function `scale_x_continuous()` to change the scale of the x axis.
+*(Hint: See an example changing the scale of the y axis from lecture)*.
+
+Be sure to adjust the x-axis label to correspond to the new labels.
+
+```{r}
+## Modify this code 
+ggplot(monona, aes(x = winter_day)) +
+  geom_histogram(binwidth = 5, center = 154, color = "darkviolet", fill = "cyan") +
+  scale_x_continuous(breaks= seq(154,214, by=15), 
+                     labels= c("Dec 1", "Dec 16", "Dec 31", "Jan 15", "Jan 30")) +
+  xlab("Days with First Freezes") +
+  ylab("Count") +
+  ggtitle("Lake Monona First Freeze Distribution",
+          subtitle = "1851 - 2021")
+```
+
+
+
+### 7
+
+The next chunk of code reads in the exoplanet data discussed in the course notes, reduces the data set to a few variables, renames these, and drops observations with missing masses.
+You do not need to read or comment on this code chunk.
+
+```{r}
+## Note: the file begins with 100 comment lines which we skip
+exo = read_csv("../../data/exoplanets_default_2021-06-15.csv", skip = 100) %>% 
+  select(pl_name, hostname, discoverymethod, pl_bmasse) %>%
+  rename(planet = pl_name,
+         star = hostname,
+         method = discoverymethod,
+         mass = pl_bmasse) %>% 
+  drop_na(mass)
+```
+
+The following code chunk makes a boxplot of the planet masses (units are in Earth masses, so 10 is ten times the mass of Earth) versus the method of discovery.
+
+```{r}
+ggplot(exo, aes(x = method, y = mass)) +
+  geom_boxplot()
+```
+
+#### 7A 
+Specify at least two faults that this basic plot has made.
+
+The box plots are very hard to understand because there are many "outliers" on each plot and they are scaled in a way which makes it hard to differentiate and interpret the data. The methods used is also hard to see, the words on the x-axis label are all overlapping so it is not visible to see which method corresponds to which plot
+
+
+
+The next code chunk adds several lines of code.
+Explain the effect that each additional line highlighted with a comment does to the plot.
+Try running the code with the indicated lines commented out or seek information from R Studio help, the *R for Data Science* textbook, or a Google search about each command and argument to understand what it does.
+
+```{r}
+## You may need to install the scales package if the next line causes an error
+library(scales)
+
+## Make the side-by-side boxplots
+ggplot(exo, aes(x = method, y = mass)) +
+  geom_boxplot() +
+  ## (7B) What does the following line do?
+  scale_y_continuous(trans = "log10", label = comma) +
+  xlab("Method of Detection") +
+  ylab("Mass (Earth masses)") +
+  ## (7C) What does the following line do?
+  coord_flip()
+```
+
+
+#### 7B effect of scale_y_continuous()
+##### trans = "log10"
+
+Transforms the y-axis scale to be based on log10 to improve readability of the data (box and whisker plots)
+
+
+
+##### label = comma
+
+Adds a comma to the y-axis for values greater than or equal to 1,000
+
+
+#### 7C effect of coord_flip()
+
+Flips the x-axis with the y-axis keeping all the label names and details with each axis
+
+
+
+### 8
+
+#### 8A
+Create a density plot of the variable `mass` from the exoplanet data set.
+Use different colors for the interior of the density and the boundary line.
+Adjust the axis labels and add a descriptive title.
+
+```{r}
+## Type your code here
+ggplot(exo) +
+  geom_density(aes(x=mass), fill="red", color="black") +
+  xlab("Total mass of Planet") +
+  ylab("Occurence") +
+  ggtitle("Density Distribution of Exoplanets")
+  
+  
+```
+
+
+#### 8B
+Describe the shape of exoplanet masses.
+
+The distribution is skewed to the right, with majority of the data lying before 5000. 
+
+
+#### 8C
+Make a second density plot for the base-10 logarithm of masses instead. 
+*Hint: consider using `scale_x_continuous`.*
+Describe the shape of the log-transformed exoplanet masses.
+
+```{r}
+## Type your code here
+ggplot(exo) +
+  geom_density(aes(x=mass), fill="cyan", color="black") +
+  scale_x_log10()
+```
+
+
+#### 8D
+Describe the shape of exoplanet masses.
+
+Biomodal distritbution with centers near 10 and 900. The density is higher at 900 compared to the density at 10.
+
+
